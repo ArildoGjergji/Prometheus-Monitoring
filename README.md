@@ -1,2 +1,99 @@
-# Prometheus Monitoring
- 
+# Contents
+
+* [Overview](#overview)
+* [Download & Installation](#download--installation)
+* [Dashboards](#dashboards)
+    * [Ping Dashboard](#ping-dashboard)
+    * [System Monitoring Dashboard](#system-monitoring-dashboard)
+* [Test Alerts](#test-alerts)
+* [Utility Scripts](#utility-scripts)
+* [Security Considerations](#security-considerations)
+   * [Production Security](#production-security)
+* [Troubleshooting](#troubleshooting)
+   * [Mac Users](#mac-users)
+
+    
+# Overview
+The main services that compose this stack are:
+
+| Service                                                                  | Port  | Description                                       | Notes                                                                                         |
+|--------------------------------------------------------------------------|:-----:|---------------------------------------------------|-----------------------------------------------------------------------------------------------| 
+| [Prometheus](http://prometheus.io/)                                      | :9090 | Data Aggregator                                   | Prometheus is an open source monitoring and alerting toolkit for microservices and containers that provides flexible queries and real-time notifications. | 
+| [AlertManager](https://prometheus.io/docs/alerting/latest/alertmanager/) | :9093 | Handles alerts sent by the Prometheus server.     | |
+| [Grafana](https://grafana.com/)                                          | :3000 | UI To Visualize Prometheus Data                   | Grafana is a multi-platform open source analytics and interactive visualization web application. |
+| [NodeExporter](https://github.com/prometheus/node_exporter)              | :9100 | Data Collector for Computer Stats | The node_exporter is designed to monitor the host system. |
+| [cAdvisor](https://github.com/google/cadvisor)                           | :8080 | Collects resource usage of the Docker containers. |                                                                                               |
+
+# Download & Installation
+By running the following commands the files are downloaded locally and the services are initialized and started.
+```
+git clone https://github.com/ArildoGjergji/Prometheus-Monitoring.git
+cd Docker-Compose-Prometheus-and-Grafana
+docker-compose up -d
+```
+
+# Dashboards
+Included are two dashboards. Grafana dashboards can be found on [Grafana Dashboards Page](https://grafana.com/grafana/dashboards/).<br\>
+
+
+### Ping Dashboard
+
+Shows HTTP uptime from websites monitored. See [Ping Configuration](ping-configuration) section.
+
+<img src="images/dashboard-ping.png" alt="Ping Dashboard">
+
+### System Monitoring Dashboard
+
+Shows stats like RAM, CPU, Storage of the current node.
+
+<img src="images/dashboard-system-monitoring.png" alt="System Monitoring Dashboard">
+
+## Utility Scripts
+
+We've provided some utility scripts in the `util` folder.
+
+| Script | Args | Description | Example |
+| --- |:---:| --- | --- |
+| docker-log.sh | service | List the logs of a docker service by name | ./util/docker-log.sh grafana |
+| docker-nuke.sh | service | Removes docker services and volumes created by this project | ./util/docker-nuke.sh |
+| docker-ssh.sh | service | SSH into a service container | ./util/docker-ssh.sh grafana |
+| high-load.sh | | Simulate high CPU load on the current computer | ./util/high-load.sh |
+| restart.sh | | Restart all services | ./util/restart.sh |
+| start.sh | | Start all services | ./util/start.sh |
+| status.sh | | Print status all services | ./util/status.sh |
+| stop.sh | | Stop all services | ./util/stop.sh |
+
+## Alerting
+
+There are 3 basic alerts that have been added to this stack.
+
+| Alert | Time To Fire | Description |
+| --- | :---: | --- |
+| Site Down | 30 seconds | Fires if a website check is down |
+| Service Down | 30 seconds | Fires if a service in this setup is down |
+| High Load | 30 seconds | Fires if the CPU load is greater than 50% |
+
+To get alerts sent to you, follow the directions in the [Alert Configuration Section](#alert-configuration).
+
+### Test Alerts
+A quick test for your alerts is to simulate high CPU load. Run the utility script `./util/high-load.sh` and about 30 seconds or so later you should notice the incident created in [PagerTree](https://pagertree.com) (assuming you followed the [Alert Configuration Section](#alert-configuration) and you'll also get notifications.
+
+Then `Ctrl+C` to stop this command. The incident should auto resolve in PagerTree.
+
+# Security Considerations
+This project is intended to be a quick-start to get up and running with Docker and Prometheus. Security has not been implemented in this project. It is the users responsibility to implement Firewall/IpTables and SSL.
+
+Since this is a template to get started Prometheus and Alerting services are exposing their ports to allow for easy troubleshooting and understanding of how the stack works.
+
+## Production Security:
+Here are just a couple security considerations for this stack to help you get started.
+* Remove the published ports from Prometheus and Alerting services and only allow Grafana to be accessed
+* Enable SSL for Grafana with a Proxy such as [jwilder/nginx-proxy](https://hub.docker.com/r/jwilder/nginx-proxy/) or [Traefik](https://traefik.io/) with Let's Encrypt
+* Add user authentication via a Reverse Proxy [jwilder/nginx-proxy](https://hub.docker.com/r/jwilder/nginx-proxy/) or [Traefik](https://traefik.io/) for services cAdvisor, Prometheus, & Alerting as they don't support user authenticaiton
+* Terminate all services/containers via HTTPS/SSL/TLS
+
+# Troubleshooting
+It appears some people have reported no data appearing in Grafana. If this is happening to you be sure to check the time range being queried within Grafana to ensure it is using Today's date with current time.
+
+## Mac Users
+Node-Exporter is not designed to run on Mac and in fact cannot collect metrics from the Mac OS. I recommend you comment out the node-exporter section in the [docker-compose.yml](docker-compose.yml) file and instead just use the cAdvisor.
