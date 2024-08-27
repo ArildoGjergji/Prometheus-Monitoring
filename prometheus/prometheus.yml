@@ -1,0 +1,42 @@
+global:
+    # How frequently to scrape targets. Default: 1m.
+    scrape_interval: 30s
+    # How long until a scrape request times out. Default: 10s.
+    scrape_timeout: 10s
+    # How frequently to evaluate rules. Default: 1m.
+    evaluation_interval: 30s
+    # Labels used to identify system with outer elements.
+    external_labels:
+        monitoring: 'monitoring_stack'
+
+
+# Load and evaluate rules in this file every 'evaluation_interval' seconds.
+rule_files:
+    - 'alert.rules'
+
+
+# A list of scrape configurations. Each service scraping can be personally configured.
+scrape_configs:
+    - job_name: 'node_exporter'
+      scrape_interval: 15s
+      static_configs:
+          - targets: ['node_exporter:9100']
+
+    - job_name: 'cadvisor'
+      scrape_interval: 15s
+      # metrics_path: <path> | default = /metrics ]
+      static_configs:
+          - targets: ['cadvisor:8080']
+
+    - job_name: 'prometheus'
+      scrape_interval: 15s
+      static_configs:
+          - targets: ['localhost:9090']
+
+
+# Settings related to the Alertmanager.
+alerting:
+    alertmanagers:
+        - scheme: http
+          static_configs:
+             - targets: ['alert_manager:9093']

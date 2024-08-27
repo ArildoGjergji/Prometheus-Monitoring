@@ -1,0 +1,52 @@
+groups:
+    - name: Disk-usage Container
+      rules:
+          - alert: 'Low data disk space'
+            expr: ceil(((node_filesystem_size_bytes{mountpoint!=""} - node_filesystem_free_bytes{mountpoint!=""}) / node_filesystem_size_bytes{mountpoint!=""} * 100)) > 50
+            labels:
+                severity: 'critical'
+            annotations:
+                title: "Disk Usage exceeded threshold."
+                description: 'Partition : {{$labels.mountpoint}}'
+                summary: "Disk usage is `{{humanize $value}}%`"
+                host: "{{$labels.instance}}"
+
+
+    - name: Memory-usage Host
+      rules:
+          - alert: 'High memory usage'
+            expr: ceil((((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / node_memory_MemTotal_bytes) * 100)) > 50
+            labels:
+                severity: 'critical'
+            annotations:
+                title: "Memory Usage exceeded threshold."
+                description: 'Memory usage threshold set to `80%`.'
+                summary: "Memory usage is `{{humanize $value}}%`"
+                host: "{{$labels.instance}}"
+
+
+
+      # Alert for any instance that is unreachable for >2 minutes.
+    - name: Container Down
+      rules:
+          - alert: service_down
+            expr: up == 0
+            for: 2m
+            labels:
+                severity: 'critical'
+            annotations:
+                summary: "Instance {{ $labels.instance }} down"
+                description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+
+
+      # Alert for any container whose load
+    - name: Container High Load
+      rules:
+          - alert: high_load
+            expr: node_load1 > 0.75
+            for: 5m
+            labels:
+                severity: 'critical'
+            annotations:
+                summary: "Instance {{ $labels.instance }} under high load"
+                description: "{{ $labels.instance }} of job {{ $labels.job }} is under high load."

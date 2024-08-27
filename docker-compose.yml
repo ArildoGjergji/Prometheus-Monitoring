@@ -1,0 +1,98 @@
+version: '3.8'
+
+# NETWORKS CONFIGURATION
+networks:
+    monitoring_net: {}
+
+volumes:
+    prom_data: {}
+    grafana_data: {}
+
+# SERVICES CONFIGURATION
+services:
+    # PROMETHEUS SERVICE
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: prometheus
+        depends_on :
+            - node_exporter
+            - cadvisor
+        volumes:
+            - ./prometheus/alert.rules:/etc/prometheus/alert.rules:ro
+            - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prom_data:/prometheus
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+            - '--web.console.templates=/usr/share/prometheus/consoles'
+        networks:
+            - monitoring_net
+        ports:
+            - "9999:9090"
+        restart: always
+
+    # ALERT MANAGER SERVICE
+    alert_manager:
+        image: prom/alertmanager:latest
+        container_name: alertmanager 
+        depends_on :
+            - prometheus
+        volumes:
+            - ./alertmanager/:/etc/alertmanager/
+        command:
+            - '--config.file=/etc/alertmanager/config.yml'
+            - '--storage.path=/alertmanager'
+        networks:
+            - monitoring_net
+        restart: always
+
+    # GRAFANA SERVICE
+    grafana:
+        image: grafana/grafana:latest  
+        container_name: grafana_monitor
+        depends_on :
+            - prometheus
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./grafana/provisioning/:/etc/grafana/provisioning/
+        networks:
+            - monitoring_net
+        ports:
+            - "3333:3000"
+        restart: always
+
+    # NODE EXPORTER SERVICE
+    node_exporter:
+        image: prom/node-exporter:latest  
+        container_name: node_exporter
+        volumes:
+            - /sys:/host/sys:ro
+            - /proc:/host/proc:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+            - /:/rootfs:ro
+        command:
+            - '--path.sysfs=/host/sys'
+            - '--path.procfs=/host/proc'
+            - '--path.rootfs=/rootfs'
+            - --collector.filesystem.ignored-mount-points
+            - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+        networks:
+            - monitoring_net
+        restart: always
+
+    # CADVISOR SERVICE
+    cadvisor:
+        image: gcr.io/cadvisor/cadvisor:latest  
+        container_name: cadvisor
+        volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:rw
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+        networks:
+            - monitoring_net
+        ports:
+            - "8080:8080"
+        privileged: true
+        restart: always
