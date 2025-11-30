@@ -35,22 +35,6 @@ sudo docker-compose up -d
 # Dashboards
 Included are two dashboards. Grafana dashboards can be found on [Grafana Dashboards Page](https://grafana.com/grafana/dashboards/).<br\>
 
-
-## Utility Scripts
-
-We've provided some utility scripts in the `util` folder.
-
-| Script | Args | Description | Example |
-| --- |:---:| --- | --- |
-| docker-log.sh | service | List the logs of a docker service by name | ./util/docker-log.sh grafana |
-| docker-nuke.sh | service | Removes docker services and volumes created by this project | ./util/docker-nuke.sh |
-| docker-ssh.sh | service | SSH into a service container | ./util/docker-ssh.sh grafana |
-| high-load.sh | | Simulate high CPU load on the current computer | ./util/high-load.sh |
-| restart.sh | | Restart all services | ./util/restart.sh |
-| start.sh | | Start all services | ./util/start.sh |
-| status.sh | | Print status all services | ./util/status.sh |
-| stop.sh | | Stop all services | ./util/stop.sh |
-
 ## Alerting
 
 There are 3 basic alerts that have been added to this stack.
