@@ -29,7 +29,7 @@ By running the following commands the files are downloaded locally and the servi
 ```
 git clone https://github.com/ArildoGjergji/Prometheus-Monitoring.git
 cd Prometheus-Monitoring
-docker-compose up -d
+sudo docker-compose up -d
 ```
 
 # Dashboards
