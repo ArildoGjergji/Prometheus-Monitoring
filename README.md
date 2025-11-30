@@ -36,18 +36,6 @@ docker-compose up -d
 Included are two dashboards. Grafana dashboards can be found on [Grafana Dashboards Page](https://grafana.com/grafana/dashboards/).<br\>
 
 
-### Ping Dashboard
-
-Shows HTTP uptime from websites monitored. See [Ping Configuration](ping-configuration) section.
-
-<img src="images/dashboard-ping.png" alt="Ping Dashboard">
-
-### System Monitoring Dashboard
-
-Shows stats like RAM, CPU, Storage of the current node.
-
-<img src="images/dashboard-system-monitoring.png" alt="System Monitoring Dashboard">
-
 ## Utility Scripts
 
 We've provided some utility scripts in the `util` folder.
