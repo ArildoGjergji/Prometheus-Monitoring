@@ -28,7 +28,7 @@ The main services that compose this stack are:
 By running the following commands the files are downloaded locally and the services are initialized and started.
 ```
 git clone https://github.com/ArildoGjergji/Prometheus-Monitoring.git
-cd Docker-Compose-Prometheus-and-Grafana
+cd Prometheus-Monitoring
 docker-compose up -d
 ```
 
